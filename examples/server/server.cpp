@@ -1117,7 +1117,10 @@ int main(int argc, char ** argv) {
 
                     segment["tokens"].push_back(token.id);
                     std::string word_text = whisper_full_get_token_text(ctx, i, j);
-                    int64_t word_t1 = token.t1;
+                    // on the original audio's timeline, like the segment's times, also when VAD cut silences out
+                    const int64_t word_t0 = token.t0 > -1 ? whisper_full_get_token_t0(ctx, i, j) : -1;
+                    const int64_t word_t_dtw = whisper_full_get_token_t_dtw(ctx, i, j);
+                    int64_t word_t1 = token.t1 > -1 ? whisper_full_get_token_t1(ctx, i, j) : -1;
 
                     while (j + 1 < n_tokens && utf8_trailing_bytes_needed(word_text) > 0) {
                         const whisper_token_data next_token = whisper_full_get_token_data(ctx, i, j + 1);
@@ -1130,16 +1133,16 @@ int main(int argc, char ** argv) {
                         segment["tokens"].push_back(next_token.id);
                         word_text += whisper_full_get_token_text(ctx, i, j);
                         if (next_token.t1 > -1) {
-                            word_t1 = next_token.t1;
+                            word_t1 = whisper_full_get_token_t1(ctx, i, j);
                         }
                         total_logprob += next_token.plog;
                     }
 
                     json word = json{{"word", word_text}};
                     if (!params.no_timestamps && params.token_timestamps) {
-                        word["start"] = token.t0 * 0.01;
+                        word["start"] = word_t0 * 0.01;
                         word["end"] = word_t1 * 0.01;
-                        word["t_dtw"] = token.t_dtw;
+                        word["t_dtw"] = word_t_dtw;
                     }
                     word["probability"] = token.p;
                     total_logprob += token.plog;
