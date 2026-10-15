@@ -677,6 +677,12 @@ extern "C" {
     WHISPER_API int64_t whisper_full_get_token_t1           (struct whisper_context * ctx, int i_segment, int i_token);
     WHISPER_API int64_t whisper_full_get_token_t1_from_state(struct whisper_state * state, int i_segment, int i_token);
 
+    // Get the DTW timestamp of the specified token, in centiseconds, or -1 when DTW timestamps were not computed.
+    // Like whisper_full_get_token_t0/t1, it is mapped back to the original audio timeline when VAD is enabled,
+    // unlike whisper_full_get_token_data().t_dtw which stays in VAD-processed time.
+    WHISPER_API int64_t whisper_full_get_token_t_dtw           (struct whisper_context * ctx, int i_segment, int i_token);
+    WHISPER_API int64_t whisper_full_get_token_t_dtw_from_state(struct whisper_state * state, int i_segment, int i_token);
+
     // Get the probability of the specified token in the specified segment
     WHISPER_API float whisper_full_get_token_p           (struct whisper_context * ctx, int i_segment, int i_token);
     WHISPER_API float whisper_full_get_token_p_from_state(struct whisper_state * state, int i_segment, int i_token);
