@@ -7950,6 +7950,13 @@ int whisper_full_with_state(
     return 0;
 }
 
+// a run without VAD must not map its times through the speech segments of the run before it
+static void whisper_vad_forget(struct whisper_state * state) {
+    state->vad_mapping_table.clear();
+    state->vad_segments.clear();
+    state->has_vad_segments = false;
+}
+
 int whisper_full(
         struct whisper_context * ctx,
     struct whisper_full_params   params,
@@ -7969,6 +7976,8 @@ int whisper_full(
         }
         samples = vad_samples.data();
         n_samples = vad_samples.size();
+    } else {
+        whisper_vad_forget(ctx->state);
     }
     return whisper_full_with_state(ctx, ctx->state, params, samples, n_samples);
 }
@@ -7996,6 +8005,8 @@ int whisper_full_parallel(
         }
         samples = vad_samples.data();
         n_samples = vad_samples.size();
+    } else {
+        whisper_vad_forget(ctx->state);
     }
     int ret = 0;
 
